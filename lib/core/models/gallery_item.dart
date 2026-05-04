@@ -2,21 +2,24 @@ import 'dart:typed_data';
 
 class GalleryItem {
   final String id;
-  String imageUrl; // used when image comes from a URL/link
-  Uint8List? imageBytes; // used when image is picked from device
+  String imageUrl;
+  Uint8List? imageBytes;
   bool isVisible;
+  DateTime? createdAt;
 
   GalleryItem({
     required this.id,
     this.imageUrl = '',
     this.imageBytes,
     this.isVisible = true,
+    this.createdAt,
   });
 
   Map<String, dynamic> toMap() {
     return {
       'imageUrl': imageUrl,
       'isVisible': isVisible,
+      'createdAt': createdAt?.toIso8601String() ?? DateTime.now().toIso8601String(),
     };
   }
 
@@ -25,6 +28,9 @@ class GalleryItem {
       id: id,
       imageUrl: map['imageUrl'] ?? '',
       isVisible: map['isVisible'] ?? true,
+      createdAt: map['createdAt'] != null 
+        ? DateTime.tryParse(map['createdAt']) 
+        : null,
     );
   }
 }

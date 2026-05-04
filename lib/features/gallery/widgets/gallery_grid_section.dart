@@ -33,25 +33,23 @@ class GalleryGridSection extends StatelessWidget {
     );
   }
 
+  String _wrapWithProxy(String url) {
+    if (url.isEmpty) return '';
+    // For Flutter Web, we use a proxy to avoid CORS issues when loading external images
+    if (url.startsWith('http') && !url.contains('corsproxy.io')) {
+      return 'https://corsproxy.io/?${Uri.encodeComponent(url)}';
+    }
+    return url;
+  }
+
   Widget _buildImageCard(GalleryItem item, BuildContext context) {
     bool isMobile = Responsive.isMobile(context);
-
-    ImageProvider imageProvider;
-    if (item.imageBytes != null) {
-      imageProvider = MemoryImage(item.imageBytes!);
-    } else if (item.imageUrl.startsWith('data:image')) {
-      final base64String = item.imageUrl.split(',').last;
-      imageProvider = MemoryImage(base64Decode(base64String));
-    } else {
-      imageProvider = NetworkImage(item.imageUrl);
-    }
 
     return Container(
       width: isMobile ? double.infinity : 400,
       height: isMobile ? 240 : 280,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
-        image: DecorationImage(image: imageProvider, fit: BoxFit.cover),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),
@@ -59,6 +57,32 @@ class GalleryGridSection extends StatelessWidget {
             offset: const Offset(0, 8),
           ),
         ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: _buildImage(item),
+      ),
+    );
+  }
+
+  Widget _buildImage(GalleryItem item) {
+    if (item.imageBytes != null) {
+      return Image.memory(item.imageBytes!, fit: BoxFit.cover);
+    }
+    
+    if (item.imageUrl.startsWith('data:image')) {
+      final base64String = item.imageUrl.split(',').last;
+      return Image.memory(base64Decode(base64String), fit: BoxFit.cover);
+    }
+
+    return Image.network(
+      _wrapWithProxy(item.imageUrl),
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) => Container(
+        color: Colors.grey[200],
+        child: const Center(
+          child: Icon(Icons.broken_image, color: Colors.grey, size: 40),
+        ),
       ),
     );
   }
