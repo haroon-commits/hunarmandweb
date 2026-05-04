@@ -182,14 +182,6 @@ class _ManageGalleryTabState extends State<ManageGalleryTab> {
       context: context,
       barrierDismissible: false,
       builder: (context) => _AddImageDialog(
-        onAddFromDevice: (bytes) async {
-          try {
-            await _galleryService.addFromDevice(bytes, 'upload');
-            if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Image uploaded!')));
-          } catch (e) {
-            if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e')));
-          }
-        },
         onAddFromLink: (url) async {
           try {
             await _galleryService.addFromLink(url);
@@ -206,30 +198,18 @@ class _ManageGalleryTabState extends State<ManageGalleryTab> {
   // ── URL processing ─────────────────────────────────────────────────────────
 
   String _processImageUrl(String url) {
-    if (url.contains('drive.google.com')) {
-      final RegExp regExp = RegExp(r'(?:/d/|id=)([a-zA-Z0-9_-]+)');
-      final Match? match = regExp.firstMatch(url);
-      if (match != null && match.groupCount >= 1) {
-        final String? fileId = match.group(1);
-        final directUrl = 'https://drive.google.com/uc?export=view&id=$fileId';
-        return 'https://images1-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&refresh=2592000&url=${Uri.encodeComponent(directUrl)}';
-      }
-    } else if (url.startsWith('http') && !url.contains('images1-focus-opensocial.googleusercontent.com') && !url.contains('corsproxy.io')) {
-      return 'https://corsproxy.io/?${Uri.encodeComponent(url)}';
-    }
-    return url;
+    // Just return the URL as-is for now, focusing on direct links.
+    return url.trim();
   }
 }
 
-// ── Add Image Dialog (self-contained) ─────────────────────────────────────────
+// ── Add Image Dialog (Simplified) ───────────────────────────────────────────
 
 class _AddImageDialog extends StatefulWidget {
-  final Future<void> Function(Uint8List bytes) onAddFromDevice;
   final void Function(String processedUrl) onAddFromLink;
   final String Function(String url) processUrl;
 
   const _AddImageDialog({
-    required this.onAddFromDevice,
     required this.onAddFromLink,
     required this.processUrl,
   });
@@ -238,113 +218,83 @@ class _AddImageDialog extends StatefulWidget {
   State<_AddImageDialog> createState() => _AddImageDialogState();
 }
 
-class _AddImageDialogState extends State<_AddImageDialog>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _AddImageDialogState extends State<_AddImageDialog> {
   final TextEditingController _urlController = TextEditingController();
-
-  Uint8List? _pickedBytes;
-  bool _isPicking = false;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
     _urlController.addListener(() => setState(() {}));
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
     _urlController.dispose();
     super.dispose();
   }
 
-  void _pickFromDevice() {
-    final input = html.FileUploadInputElement()..accept = 'image/*';
-
-    input.onChange.listen((_) async {
-      final file = input.files?.first;
-      if (file == null || !mounted) return;
-
-      setState(() => _isPicking = true);
-
-      final reader = html.FileReader();
-      reader.readAsArrayBuffer(file);
-      await reader.onLoadEnd.first;
-
-      if (!mounted) return;
-      setState(() {
-        final result = reader.result;
-        if (result is List<int>) {
-          _pickedBytes = Uint8List.fromList(result);
-        }
-        _isPicking = false;
-      });
-    });
-
-    input.click();
-  }
-
   void _submit() {
-    if (_tabController.index == 0) {
-      // From Device
-      if (_pickedBytes == null) return;
-      widget.onAddFromDevice(_pickedBytes!);
-    } else {
-      // From Link
-      final raw = _urlController.text.trim();
-      if (raw.isEmpty) return;
-      widget.onAddFromLink(widget.processUrl(raw));
-    }
+    final raw = _urlController.text.trim();
+    if (raw.isEmpty) return;
+    widget.onAddFromLink(widget.processUrl(raw));
     Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
+    final url = _urlController.text.trim();
+
     return AlertDialog(
-      title: const Text('Add Gallery Image'),
+      title: const Text('Add Gallery Image Link'),
       content: SizedBox(
         width: 420,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // ── Tab bar ──
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: TabBar(
-                controller: _tabController,
-                indicator: BoxDecoration(
-                  color: kDarkGreen,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                labelColor: Colors.white,
-                unselectedLabelColor: Colors.black54,
-                dividerColor: Colors.transparent,
-                tabs: const [
-                  Tab(
-                    icon: Icon(Icons.upload_file, size: 18),
-                    text: 'From Device',
-                  ),
-                  Tab(icon: Icon(Icons.link, size: 18), text: 'From Link'),
-                ],
-                onTap: (_) => setState(() {}),
-              ),
+            const Text(
+              'Enter a direct link to an image (ending in .jpg, .png, etc.)',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
             ),
             const SizedBox(height: 20),
-
-            // ── Tab content ──
-            SizedBox(
-              height: 220,
-              child: TabBarView(
-                controller: _tabController,
-                physics: const NeverScrollableScrollPhysics(),
-                children: [_buildDeviceTab(), _buildLinkTab()],
+            TextField(
+              controller: _urlController,
+              autofocus: true,
+              decoration: const InputDecoration(
+                labelText: 'Direct Image URL',
+                hintText: 'https://example.com/image.jpg',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.link),
               ),
+              onSubmitted: (_) => _submit(),
             ),
+            const SizedBox(height: 20),
+            if (url.isNotEmpty)
+              Container(
+                height: 180,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.grey.shade200),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Image.network(
+                    widget.processUrl(url),
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.broken_image, color: Colors.red),
+                          SizedBox(height: 8),
+                          Text('Invalid image link',
+                              style: TextStyle(color: Colors.red, fontSize: 12)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
@@ -354,143 +304,13 @@ class _AddImageDialogState extends State<_AddImageDialog>
           child: const Text('Cancel'),
         ),
         ElevatedButton(
-          onPressed: _canSubmit() ? _submit : null,
+          onPressed: url.isNotEmpty ? _submit : null,
           style: ElevatedButton.styleFrom(
             backgroundColor: kDarkGreen,
             foregroundColor: Colors.white,
           ),
           child: const Text('Add Image'),
         ),
-      ],
-    );
-  }
-
-  bool _canSubmit() {
-    if (_tabController.index == 0) return _pickedBytes != null;
-    return _urlController.text.trim().isNotEmpty;
-  }
-
-  // ── From Device tab ────────────────────────────────────────────────────────
-
-  Widget _buildDeviceTab() {
-    if (_pickedBytes != null) {
-      return Column(
-        children: [
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: Image.memory(
-                _pickedBytes!,
-                fit: BoxFit.cover,
-                width: double.infinity,
-              ),
-            ),
-          ),
-          const SizedBox(height: 10),
-          TextButton.icon(
-            onPressed: _pickFromDevice,
-            icon: const Icon(Icons.refresh),
-            label: const Text('Choose Different Image'),
-          ),
-        ],
-      );
-    }
-
-    return GestureDetector(
-      onTap: _isPicking ? null : _pickFromDevice,
-      child: Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: Colors.grey.shade300,
-            width: 2,
-            style: BorderStyle.solid,
-          ),
-          borderRadius: BorderRadius.circular(12),
-          color: Colors.grey.shade50,
-        ),
-        child: _isPicking
-            ? const Center(child: CircularProgressIndicator())
-            : Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.cloud_upload_outlined,
-                    size: 48,
-                    color: Colors.grey.shade400,
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Click to choose an image',
-                    style: TextStyle(
-                      color: Colors.grey.shade600,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'JPG, PNG, WebP supported',
-                    style: TextStyle(color: Colors.grey.shade400, fontSize: 12),
-                  ),
-                ],
-              ),
-      ),
-    );
-  }
-
-  // ── From Link tab ──────────────────────────────────────────────────────────
-
-  Widget _buildLinkTab() {
-    final url = _urlController.text.trim();
-    return Column(
-      children: [
-        TextField(
-          controller: _urlController,
-          decoration: const InputDecoration(
-            labelText: 'Image URL',
-            hintText: 'Direct link or Google Drive share link',
-            helperText:
-                'For Google Drive, ensure file is set to "Anyone with the link"',
-            helperStyle: TextStyle(fontSize: 10, color: Colors.blueGrey),
-            border: OutlineInputBorder(),
-            prefixIcon: Icon(Icons.link),
-          ),
-        ),
-        const SizedBox(height: 12),
-        if (url.isNotEmpty)
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: Image.network(
-                widget.processUrl(url),
-                fit: BoxFit.cover,
-                width: double.infinity,
-                errorBuilder: (context, error, stackTrace) => Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.broken_image, color: Colors.red),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Could not load image',
-                      style: TextStyle(color: Colors.red, fontSize: 12),
-                    ),
-                    TextButton(
-                      onPressed: () async {
-                        final uri = Uri.parse(widget.processUrl(url));
-                        if (await canLaunchUrl(uri)) {
-                          await launchUrl(uri);
-                        }
-                      },
-                      child: const Text(
-                        'Verify Link Manually',
-                        style: TextStyle(fontSize: 10),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
       ],
     );
   }
