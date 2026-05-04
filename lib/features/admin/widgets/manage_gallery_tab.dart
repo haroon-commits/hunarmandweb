@@ -151,7 +151,7 @@ class _ManageGalleryTabState extends State<ManageGalleryTab> {
     }
 
     return Image.network(
-      item.imageUrl,
+      _processImageUrl(item.imageUrl), // Using the proxy helper here
       fit: BoxFit.cover,
       opacity: AlwaysStoppedAnimation(item.isVisible ? 1.0 : 0.4),
       errorBuilder: (context, error, stackTrace) => Container(
@@ -198,7 +198,11 @@ class _ManageGalleryTabState extends State<ManageGalleryTab> {
   // ── URL processing ─────────────────────────────────────────────────────────
 
   String _processImageUrl(String url) {
-    // Just return the URL as-is for now, focusing on direct links.
+    if (url.isEmpty) return '';
+    // For Flutter Web, we use a proxy to avoid CORS issues when loading external images
+    if (url.startsWith('http') && !url.contains('corsproxy.io')) {
+      return 'https://corsproxy.io/?${Uri.encodeComponent(url.trim())}';
+    }
     return url.trim();
   }
 }

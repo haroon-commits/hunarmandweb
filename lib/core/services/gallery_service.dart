@@ -9,21 +9,18 @@ class GalleryService {
 
   // Stream of gallery items (sorted by newest first)
   Stream<List<GalleryItem>> getGalleryItems() {
-    return _firestore
-        .collection(collectionPath)
-        .snapshots()
-        .map((snapshot) {
+    return _firestore.collection(collectionPath).snapshots().map((snapshot) {
       final items = snapshot.docs
           .map((doc) => GalleryItem.fromMap(doc.data(), doc.id))
           .toList();
-      
+
       // Sort in memory (newest first)
       items.sort((a, b) {
         final dateA = a.createdAt ?? DateTime(2000);
         final dateB = b.createdAt ?? DateTime(2000);
         return dateB.compareTo(dateA);
       });
-      
+
       return items;
     });
   }
@@ -32,8 +29,8 @@ class GalleryService {
   Future<void> addFromLink(String url) async {
     final docRef = _firestore.collection(collectionPath).doc();
     final item = GalleryItem(
-      id: docRef.id, 
-      imageUrl: url, 
+      id: docRef.id,
+      imageUrl: url,
       isVisible: true,
       createdAt: DateTime.now(),
     );
@@ -59,4 +56,3 @@ class GalleryService {
     await _firestore.collection(collectionPath).doc(item.id).delete();
   }
 }
-
