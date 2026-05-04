@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'firebase_options.dart';
 
 import 'core/constants/colors.dart';
@@ -19,9 +20,11 @@ import 'features/gallery/screens/gallery_page.dart';
 import 'features/home/screens/landing_page.dart';
 import 'shared/widgets/ticker_widget.dart';
 import 'shared/widgets/top_nav_bar.dart';
+import 'core/utils/url_helper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: '.env');
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -45,9 +48,11 @@ class HunarmandKashmirApp extends StatefulWidget {
 
 class _HunarmandKashmirAppState extends State<HunarmandKashmirApp> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  final ScrollController _scrollController = ScrollController();
-  int _currentPageIndex =
-      0; // 0: Home, 1: About, 2: Courses, 3: Gallery, 4: Contact, 5: Donate, 6: Admin
+  // One scroll controller per page so each IndexedStack page scrolls independently
+  final Map<int, ScrollController> _scrollControllers = {
+    for (int i = 0; i <= 6; i++) i: ScrollController()
+  };
+  int _currentPageIndex = 0; // will be updated in initState from URL
   bool _isAdminLoggedIn = false;
 
   final List<Course> _courses = [
@@ -171,19 +176,32 @@ class _HunarmandKashmirAppState extends State<HunarmandKashmirApp> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    // Read the page from the URL hash AFTER Flutter is fully mounted.
+    // This is the reliable way to do it on Flutter web.
+    final page = getUrlPage();
+    if (page != 0) {
+      _currentPageIndex = page;
+    }
+  }
+
+  @override
   void dispose() {
-    _scrollController.dispose();
+    for (final c in _scrollControllers.values) {
+      c.dispose();
+    }
     super.dispose();
   }
 
   void _navigateTo(int index) {
-    // Always scroll to top first, then switch page
-    if (_scrollController.hasClients) {
-      _scrollController.jumpTo(0);
+    // Scroll the target page to top
+    final ctrl = _scrollControllers[index];
+    if (ctrl != null && ctrl.hasClients) {
+      ctrl.jumpTo(0);
     }
-    setState(() {
-      _currentPageIndex = index;
-    });
+    setState(() => _currentPageIndex = index);
+    setUrlPage(index); // keep URL in sync so reload stays on this page
   }
 
   @override
@@ -219,7 +237,7 @@ class _HunarmandKashmirAppState extends State<HunarmandKashmirApp> {
                   activeIndex: _currentPageIndex,
                 ),
               ),
-              Expanded(child: _buildPage()),
+              Expanded(child: _buildBody()),
             ],
           ),
         ),
@@ -307,44 +325,44 @@ class _HunarmandKashmirAppState extends State<HunarmandKashmirApp> {
     );
   }
 
-  Widget _buildPage() {
-    switch (_currentPageIndex) {
-      case 1:
-        return AboutPage(
-          key: ValueKey(_currentPageIndex),
-          onNavigate: _navigateTo,
-          scrollController: _scrollController,
-        );
-      case 2:
-        return CoursesPage(
-          key: ValueKey(_currentPageIndex),
+  // IndexedStack keeps ALL pages alive simultaneously.
+  // This means:
+  //  - AdminPanel never resets its active tab when you navigate away and back
+  //  - GalleryPage keeps its Firestore stream alive — no re-fetch needed
+  //  - Each page scrolls independently via its own ScrollController
+  Widget _buildBody() {
+    return IndexedStack(
+      index: _currentPageIndex,
+      children: [
+        LandingPage(
           onNavigate: _navigateTo,
           courses: _courses,
-          scrollController: _scrollController,
-        );
-      case 3:
-        return GalleryPage(
-          key: ValueKey(_currentPageIndex),
+          scrollController: _scrollControllers[0]!,
+        ),
+        AboutPage(
           onNavigate: _navigateTo,
-          scrollController: _scrollController,
-        );
-      case 4:
-        return ContactPage(
-          key: ValueKey(_currentPageIndex),
+          scrollController: _scrollControllers[1]!,
+        ),
+        CoursesPage(
           onNavigate: _navigateTo,
-          scrollController: _scrollController,
-        );
-      case 5:
-        return DonatePage(
-          key: ValueKey(_currentPageIndex),
+          courses: _courses,
+          scrollController: _scrollControllers[2]!,
+        ),
+        GalleryPage(
+          onNavigate: _navigateTo,
+          scrollController: _scrollControllers[3]!,
+        ),
+        ContactPage(
+          onNavigate: _navigateTo,
+          scrollController: _scrollControllers[4]!,
+        ),
+        DonatePage(
           onNavigate: _navigateTo,
           donationOptions: _donationOptions,
           bankDetails: _bankDetails,
-          scrollController: _scrollController,
-        );
-      case 6:
-        return AdminPanel(
-          key: ValueKey(_currentPageIndex),
+          scrollController: _scrollControllers[5]!,
+        ),
+        AdminPanel(
           onNavigate: _navigateTo,
           courses: _courses,
           donationOptions: _donationOptions,
@@ -352,18 +370,10 @@ class _HunarmandKashmirAppState extends State<HunarmandKashmirApp> {
           isLoggedIn: _isAdminLoggedIn,
           tickerItems: _tickerItems,
           onLogin: (status) => setState(() => _isAdminLoggedIn = status),
-          onUpdateTicker: (items) => setState(() {
-            _tickerItems = items;
-          }),
+          onUpdateTicker: (items) => setState(() { _tickerItems = items; }),
           onUpdate: () => setState(() {}),
-        );
-      default:
-        return LandingPage(
-          key: ValueKey(_currentPageIndex),
-          onNavigate: _navigateTo,
-          courses: _courses,
-          scrollController: _scrollController,
-        );
-    }
+        ),
+      ],
+    );
   }
 }

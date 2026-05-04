@@ -84,7 +84,7 @@ class FooterSection extends StatelessWidget {
                                 children: [
                                   _socialLink(
                                     'Facebook',
-                                    'https://facebook.com/hunarmandkashmir',
+                                    'https://facebook.com/hunarmandkashmir1',
                                   ),
                                   const SizedBox(width: 20),
                                   _socialLink(
@@ -191,10 +191,7 @@ class FooterSection extends StatelessWidget {
                                 Icons.location_on_outlined,
                                 'A.M. Design, Nangi (Behind Bank of Punjab), Allama Iqbal Road, Mirpur, AJK, Pakistanr',
                               ),
-                              _contactItem(
-                                Icons.phone_outlined,
-                                kPhoneDisplay,
-                              ),
+                              _contactItem(Icons.phone_outlined, kPhoneDisplay),
                               _contactItem(
                                 Icons.email_outlined,
                                 'salam@hunarmandkashmir.com',

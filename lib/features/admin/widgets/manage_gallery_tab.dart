@@ -21,6 +21,15 @@ class ManageGalleryTab extends StatefulWidget {
 class _ManageGalleryTabState extends State<ManageGalleryTab> {
   final GalleryService _galleryService = GalleryService();
 
+  // Stable stream — created once in initState, not on every build
+  late final Stream<List<GalleryItem>> _stream;
+
+  @override
+  void initState() {
+    super.initState();
+    _stream = _galleryService.getGalleryItems();
+  }
+
   // ── Build ──────────────────────────────────────────────────────────────────
 
   @override
@@ -50,7 +59,7 @@ class _ManageGalleryTabState extends State<ManageGalleryTab> {
         ),
         Expanded(
           child: StreamBuilder<List<GalleryItem>>(
-            stream: _galleryService.getGalleryItems(),
+            stream: _stream,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
