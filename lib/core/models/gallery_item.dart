@@ -12,4 +12,19 @@ class GalleryItem {
     this.imageBytes,
     this.isVisible = true,
   });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'imageUrl': imageUrl,
+      'isVisible': isVisible,
+    };
+  }
+
+  factory GalleryItem.fromMap(Map<String, dynamic> map, String id) {
+    return GalleryItem(
+      id: id,
+      imageUrl: map['imageUrl'] ?? '',
+      isVisible: map['isVisible'] ?? true,
+    );
+  }
 }

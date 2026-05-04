@@ -6,14 +6,13 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/constants/colors.dart';
 import '../../../../core/models/gallery_item.dart';
+import '../../../../core/services/gallery_service.dart';
 
 class ManageGalleryTab extends StatefulWidget {
-  final List<GalleryItem> galleryItems;
   final VoidCallback onUpdate;
 
   const ManageGalleryTab({
     super.key,
-    required this.galleryItems,
     required this.onUpdate,
   });
 
@@ -22,6 +21,8 @@ class ManageGalleryTab extends StatefulWidget {
 }
 
 class _ManageGalleryTabState extends State<ManageGalleryTab> {
+  final GalleryService _galleryService = GalleryService();
+
   // ── Build ──────────────────────────────────────────────────────────────────
 
   @override
@@ -50,25 +51,41 @@ class _ManageGalleryTabState extends State<ManageGalleryTab> {
           ),
         ),
         Expanded(
-          child: widget.galleryItems.isEmpty
-              ? const Center(
+          child: StreamBuilder<List<GalleryItem>>(
+            stream: _galleryService.getGalleryItems(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (snapshot.hasError) {
+                return Center(child: Text('Error loading gallery: ${snapshot.error}'));
+              }
+
+              final items = snapshot.data ?? [];
+
+              if (items.isEmpty) {
+                return const Center(
                   child: Text(
                     'No images yet. Tap "Add Image" to get started.',
                     style: TextStyle(color: Colors.grey),
                   ),
-                )
-              : GridView.builder(
-                  padding: const EdgeInsets.all(20),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    crossAxisSpacing: 20,
-                    mainAxisSpacing: 20,
-                    childAspectRatio: 1.5,
-                  ),
-                  itemCount: widget.galleryItems.length,
-                  itemBuilder: (context, index) =>
-                      _buildGridCard(index, widget.galleryItems[index]),
+                );
+              }
+
+              return GridView.builder(
+                padding: const EdgeInsets.all(20),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 20,
+                  mainAxisSpacing: 20,
+                  childAspectRatio: 1.5,
                 ),
+                itemCount: items.length,
+                itemBuilder: (context, index) =>
+                    _buildGridCard(index, items[index]),
+              );
+            },
+          ),
         ),
       ],
     );
@@ -93,8 +110,7 @@ class _ManageGalleryTabState extends State<ManageGalleryTab> {
                 icon: item.isVisible ? Icons.visibility : Icons.visibility_off,
                 color: Colors.blue,
                 onPressed: () {
-                  setState(() => item.isVisible = !item.isVisible);
-                  widget.onUpdate();
+                  _galleryService.toggleVisibility(item.id, !item.isVisible);
                 },
               ),
               const SizedBox(width: 5),
@@ -102,8 +118,7 @@ class _ManageGalleryTabState extends State<ManageGalleryTab> {
                 icon: Icons.delete,
                 color: Colors.red,
                 onPressed: () {
-                  setState(() => widget.galleryItems.removeAt(index));
-                  widget.onUpdate();
+                  _galleryService.deleteItem(item);
                 },
               ),
             ],
@@ -151,44 +166,27 @@ class _ManageGalleryTabState extends State<ManageGalleryTab> {
   void _showAddImageDialog() {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => _AddImageDialog(
-        onAddFromDevice: _addFromDevice,
-        onAddFromLink: _addFromLink,
+        onAddFromDevice: (bytes) async {
+          try {
+            await _galleryService.addFromDevice(bytes, 'upload');
+            if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Image uploaded!')));
+          } catch (e) {
+            if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e')));
+          }
+        },
+        onAddFromLink: (url) async {
+          try {
+            await _galleryService.addFromLink(url);
+            if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Link added!')));
+          } catch (e) {
+            if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e')));
+          }
+        },
         processUrl: _processImageUrl,
       ),
     );
-  }
-
-  Future<void> _addFromDevice(Uint8List bytes) async {
-    setState(() {
-      widget.galleryItems.add(
-        GalleryItem(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          imageBytes: bytes,
-        ),
-      );
-    });
-    widget.onUpdate();
-    if (mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Image added successfully')));
-    }
-  }
-
-  void _addFromLink(String processedUrl) {
-    setState(() {
-      widget.galleryItems.add(
-        GalleryItem(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          imageUrl: processedUrl,
-        ),
-      );
-    });
-    widget.onUpdate();
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Image added successfully')));
   }
 
   // ── URL processing ─────────────────────────────────────────────────────────

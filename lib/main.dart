@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 import 'core/constants/colors.dart';
 import 'core/models/bank_details.dart';
@@ -18,7 +20,12 @@ import 'features/home/screens/landing_page.dart';
 import 'shared/widgets/ticker_widget.dart';
 import 'shared/widgets/top_nav_bar.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
   // Capture Flutter framework errors
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.presentError(details);
@@ -112,8 +119,6 @@ class _HunarmandKashmirAppState extends State<HunarmandKashmirApp> {
       remainingSeats: 'Only 2 Seats Left',
     ),
   ];
-
-  final List<GalleryItem> _galleryItems = [];
 
   final List<DonationOption> _donationOptions = [
     DonationOption(
@@ -321,7 +326,6 @@ class _HunarmandKashmirAppState extends State<HunarmandKashmirApp> {
         return GalleryPage(
           key: ValueKey(_currentPageIndex),
           onNavigate: _navigateTo,
-          galleryItems: _galleryItems,
           scrollController: _scrollController,
         );
       case 4:
@@ -343,7 +347,6 @@ class _HunarmandKashmirAppState extends State<HunarmandKashmirApp> {
           key: ValueKey(_currentPageIndex),
           onNavigate: _navigateTo,
           courses: _courses,
-          galleryItems: _galleryItems,
           donationOptions: _donationOptions,
           bankDetails: _bankDetails,
           isLoggedIn: _isAdminLoggedIn,

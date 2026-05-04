@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "985433556137",
+    "project_id": "hunarmandkashmir-2c28d",
+    "storage_bucket": "hunarmandkashmir-2c28d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:985433556137:android:c769f1ee867eeda5ec55b8",
+        "android_client_info": {
+          "package_name": "com.example.hunarmandkashmir"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDMpGtIdOzKWtkaULOkTujnNv4We10jA0o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

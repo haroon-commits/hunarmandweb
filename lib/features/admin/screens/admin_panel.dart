@@ -17,7 +17,6 @@ import '../widgets/manage_ticker_tab.dart';
 class AdminPanel extends StatefulWidget {
   final Function(int) onNavigate;
   final List<Course> courses;
-  final List<GalleryItem> galleryItems;
   final List<DonationOption> donationOptions;
   final BankDetails bankDetails;
   final bool isLoggedIn;
@@ -30,7 +29,6 @@ class AdminPanel extends StatefulWidget {
     super.key,
     required this.onNavigate,
     required this.courses,
-    required this.galleryItems,
     required this.donationOptions,
     required this.bankDetails,
     required this.isLoggedIn,
@@ -169,7 +167,6 @@ class _AdminPanelState extends State<AdminPanel> {
         );
       case 1:
         return ManageGalleryTab(
-          galleryItems: widget.galleryItems,
           onUpdate: widget.onUpdate,
         );
       case 2:
