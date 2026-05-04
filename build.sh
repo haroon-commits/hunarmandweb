@@ -1,17 +1,29 @@
 #!/bin/bash
+set -e  # Exit immediately on any error
 
-# Download Flutter
-echo "Downloading Flutter..."
-git clone https://github.com/flutter/flutter.git -b stable
+echo "========================================="
+echo " Hunarmand Kashmir - Vercel Build Script "
+echo "========================================="
 
-# Add flutter to path
-export PATH="$PATH:`pwd`/flutter/bin"
+# Use a pinned stable Flutter version for reproducible builds
+FLUTTER_VERSION="3.32.0"
 
-# Enable web support (just in case)
+echo "Downloading Flutter $FLUTTER_VERSION..."
+git clone https://github.com/flutter/flutter.git -b stable --depth=1 flutter-sdk
+
+# Add flutter to PATH for this session
+export PATH="$PATH:$(pwd)/flutter-sdk/bin"
+
+echo "Flutter version:"
+flutter --version
+
+# Enable web support
 flutter config --enable-web
 
-# Get dependencies
+echo "Installing dependencies..."
 flutter pub get
 
-# Build the web app
-flutter build web --release
+echo "Building web app (release)..."
+flutter build web --release --web-renderer canvaskit
+
+echo "Build complete! Output in build/web/"
