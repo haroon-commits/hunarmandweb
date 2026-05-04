@@ -1,8 +1,6 @@
 import 'dart:convert';
-import 'dart:typed_data';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/constants/colors.dart';
 import '../../../../core/models/gallery_item.dart';
@@ -180,14 +178,32 @@ class _ManageGalleryTabState extends State<ManageGalleryTab> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => _AddImageDialog(
+      builder: (dialogContext) => _AddImageDialog(
         // Save the RAW url to Firestore (not the proxy-wrapped one)
         onAddFromLink: (rawUrl) async {
+          debugPrint('[ManageGalleryTab] Saving image URL: $rawUrl');
           try {
             await _galleryService.addFromLink(rawUrl);
-            if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Image added successfully!')));
+            debugPrint('[ManageGalleryTab] ✅ Save successful!');
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('✅ Image added successfully!'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            }
           } catch (e) {
-            if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to save: $e')));
+            debugPrint('[ManageGalleryTab] ❌ Save failed: $e');
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('❌ Failed to save: $e'),
+                  backgroundColor: Colors.red,
+                  duration: const Duration(seconds: 6),
+                ),
+              );
+            }
           }
         },
         // Proxy is only used for the live preview inside the dialog
