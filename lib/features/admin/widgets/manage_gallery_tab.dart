@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:html' as html;
 import 'dart:typed_data';
 
@@ -136,6 +137,19 @@ class _ManageGalleryTabState extends State<ManageGalleryTab> {
         opacity: AlwaysStoppedAnimation(item.isVisible ? 1.0 : 0.4),
       );
     }
+    if (item.imageUrl.startsWith('data:image')) {
+      final base64String = item.imageUrl.split(',').last;
+      return Image.memory(
+        base64Decode(base64String),
+        fit: BoxFit.cover,
+        opacity: AlwaysStoppedAnimation(item.isVisible ? 1.0 : 0.4),
+        errorBuilder: (context, error, stackTrace) => Container(
+          color: Colors.grey[200],
+          child: const Center(child: Icon(Icons.broken_image, color: Colors.red)),
+        ),
+      );
+    }
+
     return Image.network(
       item.imageUrl,
       fit: BoxFit.cover,
@@ -200,6 +214,8 @@ class _ManageGalleryTabState extends State<ManageGalleryTab> {
         final directUrl = 'https://drive.google.com/uc?export=view&id=$fileId';
         return 'https://images1-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&refresh=2592000&url=${Uri.encodeComponent(directUrl)}';
       }
+    } else if (url.startsWith('http') && !url.contains('images1-focus-opensocial.googleusercontent.com') && !url.contains('corsproxy.io')) {
+      return 'https://corsproxy.io/?${Uri.encodeComponent(url)}';
     }
     return url;
   }

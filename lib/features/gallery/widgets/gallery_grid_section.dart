@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 
 import '../../../core/models/gallery_item.dart';
@@ -35,9 +36,15 @@ class GalleryGridSection extends StatelessWidget {
   Widget _buildImageCard(GalleryItem item, BuildContext context) {
     bool isMobile = Responsive.isMobile(context);
 
-    final ImageProvider imageProvider = item.imageBytes != null
-        ? MemoryImage(item.imageBytes!)
-        : NetworkImage(item.imageUrl) as ImageProvider;
+    ImageProvider imageProvider;
+    if (item.imageBytes != null) {
+      imageProvider = MemoryImage(item.imageBytes!);
+    } else if (item.imageUrl.startsWith('data:image')) {
+      final base64String = item.imageUrl.split(',').last;
+      imageProvider = MemoryImage(base64Decode(base64String));
+    } else {
+      imageProvider = NetworkImage(item.imageUrl);
+    }
 
     return Container(
       width: isMobile ? double.infinity : 400,
