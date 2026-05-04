@@ -21,7 +21,7 @@ class JourneySection extends StatelessWidget {
             'Your Journey Begins Here',
             textAlign: TextAlign.center,
             style: GoogleFonts.merriweather(
-              color: kPrimaryGreen,
+              color: kDarkGreen,
               fontSize: isMobile ? 36 : 48,
               fontWeight: FontWeight.bold,
             ),

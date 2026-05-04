@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../core/constants/colors.dart';
 import '../../../core/utils/responsive.dart';
 
 class HeroSection extends StatelessWidget {
@@ -16,7 +17,7 @@ class HeroSection extends StatelessWidget {
     bool isMobile = Responsive.isMobile(context);
     return Container(
       width: double.infinity,
-      color: const Color(0xFF002B11), // HEROSECTION BACKGROUND COLOR
+      color: kDarkGreen,
       padding: EdgeInsets.symmetric(
         horizontal: isMobile ? 20 : 80,
         vertical: isMobile ? 40 : 60,
@@ -24,7 +25,7 @@ class HeroSection extends StatelessWidget {
       child: Column(
         children: [
           Image.asset(
-            'assets/images/Hunarmand_Kashmir_Eng4x.png',
+            'assets/images/logo_colored.png',
             height: isMobile ? 80 : 120,
             fit: BoxFit.contain,
           ),
@@ -56,7 +57,7 @@ class HeroSection extends StatelessWidget {
             children: [
               _buildButton(
                 'Explore Our Courses →',
-                const Color.fromRGBO(242, 169, 0, 1),
+                kAccentOrange,
                 Colors.white,
                 () => onNavigate(2),
               ),

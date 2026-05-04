@@ -6,6 +6,7 @@ import '../../../core/models/bank_details.dart';
 import '../../../core/models/course.dart';
 import '../../../core/models/donation_option.dart';
 import '../../../core/models/gallery_item.dart';
+import '../../../core/models/ticker_item.dart';
 import '../../../core/utils/responsive.dart';
 import '../widgets/manage_courses_tab.dart';
 import '../widgets/manage_gallery_tab.dart';
@@ -20,10 +21,9 @@ class AdminPanel extends StatefulWidget {
   final List<DonationOption> donationOptions;
   final BankDetails bankDetails;
   final bool isLoggedIn;
-  final List<String> tickerMessages;
-  final int? tickerTargetIndex;
+  final List<TickerItem> tickerItems;
   final Function(bool) onLogin;
-  final Function(List<String>, int?) onUpdateTicker;
+  final Function(List<TickerItem>) onUpdateTicker;
   final VoidCallback onUpdate;
 
   const AdminPanel({
@@ -34,8 +34,7 @@ class AdminPanel extends StatefulWidget {
     required this.donationOptions,
     required this.bankDetails,
     required this.isLoggedIn,
-    required this.tickerMessages,
-    required this.tickerTargetIndex,
+    required this.tickerItems,
     required this.onLogin,
     required this.onUpdateTicker,
     required this.onUpdate,
@@ -60,6 +59,12 @@ class _AdminPanelState extends State<AdminPanel> {
   }
 
   @override
+  void dispose() {
+    _passController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     bool isMobile = Responsive.isMobile(context);
     if (!widget.isLoggedIn) {
@@ -79,7 +84,7 @@ class _AdminPanelState extends State<AdminPanel> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.lock_outline, size: 60, color: kPrimaryGreen),
+                const Icon(Icons.lock_outline, size: 60, color: kDarkGreen),
                 const SizedBox(height: 20),
                 Text(
                   'Admin Login',
@@ -101,7 +106,7 @@ class _AdminPanelState extends State<AdminPanel> {
                 ElevatedButton(
                   onPressed: _login,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: kPrimaryGreen,
+                    backgroundColor: kDarkGreen,
                     foregroundColor: Colors.white,
                     minimumSize: const Size(double.infinity, 50),
                   ),
@@ -128,7 +133,7 @@ class _AdminPanelState extends State<AdminPanel> {
           'Admin Dashboard',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: kPrimaryGreen,
+        backgroundColor: kDarkGreen,
         foregroundColor: Colors.white,
         actions: [
           IconButton(
@@ -138,7 +143,9 @@ class _AdminPanelState extends State<AdminPanel> {
         ],
       ),
       drawer: isMobile
-          ? Drawer(child: Container(color: kLightBg, child: _sidebarContent()))
+          ? Drawer(
+              child: Container(color: kLightBg, child: _sidebarContent()),
+            )
           : null,
       body: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -177,8 +184,7 @@ class _AdminPanelState extends State<AdminPanel> {
         );
       case 4:
         return ManageTickerTab(
-          tickerMessages: widget.tickerMessages,
-          tickerTargetIndex: widget.tickerTargetIndex,
+          tickerItems: widget.tickerItems,
           onUpdateTicker: widget.onUpdateTicker,
         );
       default:
@@ -213,11 +219,11 @@ class _AdminPanelState extends State<AdminPanel> {
     bool active = _activeTab == index;
     bool isMobile = Responsive.isMobile(context);
     return ListTile(
-      leading: Icon(icon, color: active ? kPrimaryGreen : Colors.grey),
+      leading: Icon(icon, color: active ? kDarkGreen : Colors.grey),
       title: Text(
         title,
         style: TextStyle(
-          color: active ? kPrimaryGreen : Colors.black87,
+          color: active ? kDarkGreen : Colors.black87,
           fontWeight: active ? FontWeight.bold : FontWeight.normal,
         ),
       ),

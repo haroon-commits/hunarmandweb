@@ -108,7 +108,6 @@ class _ManageBankTabState extends State<ManageBankTab> {
                   widget.bankDetails.branchCode = _branchController.text;
                 });
                 widget.onUpdate();
-                debugPrint('AdminPanel: Successfully updated bank details');
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('Bank details updated successfully!'),
@@ -126,7 +125,7 @@ class _ManageBankTabState extends State<ManageBankTab> {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: kPrimaryGreen,
+              backgroundColor: kDarkGreen,
               foregroundColor: Colors.white,
               minimumSize: const Size(double.infinity, 60),
               shape: RoundedRectangleBorder(

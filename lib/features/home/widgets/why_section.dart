@@ -21,7 +21,7 @@ class WhySection extends StatelessWidget {
             'Why Hunarmand Kashmir?',
             textAlign: TextAlign.center,
             style: GoogleFonts.merriweather(
-              color: kPrimaryGreen,
+              color: kDarkGreen,
               fontSize: isMobile ? 32 : 48,
               fontWeight: FontWeight.bold,
             ),
@@ -128,10 +128,10 @@ class WhySection extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(15),
             decoration: BoxDecoration(
-              color: kPrimaryGreen.withValues(alpha: 0.05),
+              color: kDarkGreen.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(15),
             ),
-            child: Icon(icon, color: kPrimaryGreen, size: 30),
+            child: Icon(icon, color: kDarkGreen, size: 30),
           ),
           const SizedBox(height: 25),
           Text(

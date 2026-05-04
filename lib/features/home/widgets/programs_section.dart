@@ -50,7 +50,7 @@ class ProgramsSection extends StatelessWidget {
                         'Skills for the Future',
                         textAlign: TextAlign.center,
                         style: GoogleFonts.merriweather(
-                          color: kPrimaryGreen,
+                          color: kDarkGreen,
                           fontSize: 32,
                           fontWeight: FontWeight.bold,
                         ),
@@ -61,7 +61,7 @@ class ProgramsSection extends StatelessWidget {
                         child: const Text(
                           'View all courses →',
                           style: TextStyle(
-                            color: kPrimaryGreen,
+                            color: kDarkGreen,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -77,7 +77,7 @@ class ProgramsSection extends StatelessWidget {
                           'Skills for the Future',
                           textAlign: TextAlign.center,
                           style: GoogleFonts.merriweather(
-                            color: kPrimaryGreen,
+                            color: kDarkGreen,
                             fontSize: 44,
                             fontWeight: FontWeight.bold,
                           ),
@@ -90,7 +90,7 @@ class ProgramsSection extends StatelessWidget {
                           child: const Text(
                             'View all courses →',
                             style: TextStyle(
-                              color: kPrimaryGreen,
+                              color: kDarkGreen,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -180,10 +180,10 @@ class ProgramsSection extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: kPrimaryGreen.withValues(alpha: 0.05),
+                  color: kDarkGreen.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(course.icon, color: kPrimaryGreen, size: 24),
+                child: Icon(course.icon, color: kDarkGreen, size: 24),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -283,7 +283,7 @@ class ProgramsSection extends StatelessWidget {
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: kPrimaryGreen,
+                  backgroundColor: kDarkGreen,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),

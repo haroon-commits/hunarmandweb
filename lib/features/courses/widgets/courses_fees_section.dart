@@ -27,7 +27,7 @@ class CoursesFeesSection extends StatelessWidget {
             'Courses & Fees',
             textAlign: TextAlign.center,
             style: GoogleFonts.merriweather(
-              color: kPrimaryGreen,
+              color: kDarkGreen,
               fontSize: isMobile ? 32 : 44,
               fontWeight: FontWeight.bold,
             ),
@@ -119,17 +119,17 @@ class CoursesFeesSection extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: kPrimaryGreen.withValues(alpha: 0.05),
+                      color: kDarkGreen.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Icon(course.icon, color: kPrimaryGreen, size: 28),
+                    child: Icon(course.icon, color: kDarkGreen, size: 28),
                   ),
                   const SizedBox(width: 15),
                   Expanded(
                     child: Text(
                       course.title,
                       style: GoogleFonts.merriweather(
-                        color: kPrimaryGreen,
+                        color: kDarkGreen,
                         fontSize: 26,
                         fontWeight: FontWeight.bold,
                       ),
@@ -217,8 +217,8 @@ class CoursesFeesSection extends StatelessWidget {
                         }
                       },
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: kPrimaryGreen,
-                        side: const BorderSide(color: kPrimaryGreen),
+                        foregroundColor: kDarkGreen,
+                        side: const BorderSide(color: kDarkGreen),
                         padding: const EdgeInsets.symmetric(vertical: 20),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -248,7 +248,7 @@ class CoursesFeesSection extends StatelessWidget {
                           }
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: kPrimaryGreen,
+                          backgroundColor: kDarkGreen,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 20),
                           shape: RoundedRectangleBorder(

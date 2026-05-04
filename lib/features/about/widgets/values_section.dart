@@ -87,7 +87,7 @@ class ValuesSection extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: const Border(top: BorderSide(color: kPrimaryGreen, width: 4)),
+        border: const Border(top: BorderSide(color: kDarkGreen, width: 4)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.02),

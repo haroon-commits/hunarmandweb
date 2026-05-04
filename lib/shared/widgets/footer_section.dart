@@ -67,26 +67,41 @@ class FooterSection extends StatelessWidget {
                         ),
                         const SizedBox(height: 30),
                         if (!isMobile)
-                          Row(
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _socialLink(
-                                'Facebook',
-                                'https://facebook.com/hunarmandkashmir',
+                              Text(
+                                'Follow Us:',
+                                style: GoogleFonts.inter(
+                                  color: Colors.amber,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 1.2,
+                                ),
                               ),
-                              const SizedBox(width: 20),
-                              _socialLink(
-                                'Instagram',
-                                'https://instagram.com/hunarmandkashmir',
-                              ),
-                              const SizedBox(width: 20),
-                              _socialLink(
-                                'TikTok',
-                                'https://tiktok.com/@hunarmandkashmir',
-                              ),
-                              const SizedBox(width: 20),
-                              _socialLink(
-                                'YouTube',
-                                'https://youtube.com/@hunarmandkashmir',
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  _socialLink(
+                                    'Facebook',
+                                    'https://facebook.com/hunarmandkashmir',
+                                  ),
+                                  const SizedBox(width: 20),
+                                  _socialLink(
+                                    'Instagram',
+                                    'https://instagram.com/hunarmandkashmir',
+                                  ),
+                                  const SizedBox(width: 20),
+                                  _socialLink(
+                                    'TikTok',
+                                    'https://tiktok.com/@hunarmandkashmir',
+                                  ),
+                                  const SizedBox(width: 20),
+                                  _socialLink(
+                                    'YouTube',
+                                    'https://youtube.com/@hunarmandkashmir',
+                                  ),
+                                ],
                               ),
                             ],
                           ),
@@ -178,7 +193,7 @@ class FooterSection extends StatelessWidget {
                               ),
                               _contactItem(
                                 Icons.phone_outlined,
-                                '0313 884 0571',
+                                kPhoneDisplay,
                               ),
                               _contactItem(
                                 Icons.email_outlined,
@@ -223,27 +238,41 @@ class FooterSection extends StatelessWidget {
               ),
               if (isMobile) ...[
                 const SizedBox(height: 30),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                Column(
                   children: [
-                    _socialLink(
-                      'Facebook',
-                      'https://facebook.com/hunarmandkashmir',
+                    Text(
+                      'Follow Us',
+                      style: GoogleFonts.inter(
+                        color: Colors.amber,
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.2,
+                      ),
                     ),
-                    const SizedBox(width: 15),
-                    _socialLink(
-                      'Instagram',
-                      'https://instagram.com/hunarmandkashmir',
-                    ),
-                    const SizedBox(width: 15),
-                    _socialLink(
-                      'TikTok',
-                      'https://tiktok.com/@hunarmandkashmir',
-                    ),
-                    const SizedBox(width: 15),
-                    _socialLink(
-                      'YouTube',
-                      'https://youtube.com/@hunarmandkashmir',
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _socialLink(
+                          'Facebook',
+                          'https://facebook.com/hunarmandkashmir',
+                        ),
+                        const SizedBox(width: 15),
+                        _socialLink(
+                          'Instagram',
+                          'https://instagram.com/hunarmandkashmir',
+                        ),
+                        const SizedBox(width: 15),
+                        _socialLink(
+                          'TikTok',
+                          'https://tiktok.com/@hunarmandkashmir',
+                        ),
+                        const SizedBox(width: 15),
+                        _socialLink(
+                          'YouTube',
+                          'https://youtube.com/@hunarmandkashmir',
+                        ),
+                      ],
                     ),
                   ],
                 ),

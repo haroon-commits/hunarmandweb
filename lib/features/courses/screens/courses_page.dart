@@ -26,7 +26,7 @@ class CoursesPage extends StatelessWidget {
       child: Column(
         children: [
           CoursesHeroSection(onNavigate: onNavigate),
-          const LearningChoiceSection(),
+          //   const LearningChoiceSection(),
           CoursesFeesSection(courses: courses),
           const DiscountsSection(),
           const OrphanSupportBanner(),

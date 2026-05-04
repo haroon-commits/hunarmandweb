@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../core/constants/colors.dart';
 import '../../../core/utils/responsive.dart';
 
 class ContactHeroSection extends StatelessWidget {
@@ -12,7 +13,7 @@ class ContactHeroSection extends StatelessWidget {
     bool isMobile = Responsive.isMobile(context);
     return Container(
       width: double.infinity,
-      color: const Color(0xFF002B11),
+      color: kDarkGreen,
       padding: EdgeInsets.symmetric(
         horizontal: isMobile ? 20 : 80,
         vertical: 40,

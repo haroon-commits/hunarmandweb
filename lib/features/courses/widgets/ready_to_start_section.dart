@@ -67,9 +67,9 @@ class ReadyToStartSection extends StatelessWidget {
                   isMobile,
                 ),
                 _buildOutlineButton('Chat on WhatsApp', Colors.white, () async {
-                  const url = 'https://wa.me/923138840571';
-                  if (await canLaunchUrl(Uri.parse(url))) {
-                    await launchUrl(Uri.parse(url));
+                  final uri = Uri.parse(kWhatsAppUrl);
+                  if (await canLaunchUrl(uri)) {
+                    await launchUrl(uri);
                   }
                 }, isMobile),
               ],

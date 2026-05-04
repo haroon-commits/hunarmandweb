@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/constants/colors.dart';
 import '../../../core/models/bank_details.dart';
@@ -44,8 +45,9 @@ class BankTransferSection extends StatelessWidget {
 
   Widget _buildBankInfo(bool isMobile, BuildContext context) {
     return Column(
-      crossAxisAlignment:
-          isMobile ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+      crossAxisAlignment: isMobile
+          ? CrossAxisAlignment.center
+          : CrossAxisAlignment.start,
       children: [
         Text(
           'Direct Bank Transfer',
@@ -60,10 +62,7 @@ class BankTransferSection extends StatelessWidget {
         Text(
           'Prefer to transfer directly? You can send your contributions to our registered trust account. Please share the receipt via WhatsApp.',
           textAlign: isMobile ? TextAlign.center : TextAlign.start,
-          style: TextStyle(
-            color: Colors.white70,
-            fontSize: isMobile ? 16 : 20,
-          ),
+          style: TextStyle(color: Colors.white70, fontSize: isMobile ? 16 : 20),
         ),
         const SizedBox(height: 40),
         _bankRow('Account Name:', bankDetails.accountName, context),
@@ -96,12 +95,16 @@ class BankTransferSection extends StatelessWidget {
         SizedBox(
           width: isMobile ? double.infinity : null,
           child: ElevatedButton(
-            onPressed: () {},
+            onPressed: () async {
+              final uri = Uri.parse(kWhatsAppUrl);
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri);
+              }
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
               foregroundColor: kDarkGreen,
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(30),
               ),

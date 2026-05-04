@@ -11,6 +11,11 @@ class GalleryGridSection extends StatelessWidget {
   Widget build(BuildContext context) {
     bool isMobile = Responsive.isMobile(context);
     final visibleItems = galleryItems.where((item) => item.isVisible).toList();
+
+    if (visibleItems.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return Padding(
       padding: EdgeInsets.symmetric(
         vertical: isMobile ? 60 : 120,
@@ -21,20 +26,25 @@ class GalleryGridSection extends StatelessWidget {
         runSpacing: 30,
         alignment: WrapAlignment.center,
         children: visibleItems
-            .map((item) => _buildImageCard(item.imageUrl, context))
+            .map((item) => _buildImageCard(item, context))
             .toList(),
       ),
     );
   }
 
-  Widget _buildImageCard(String url, BuildContext context) {
+  Widget _buildImageCard(GalleryItem item, BuildContext context) {
     bool isMobile = Responsive.isMobile(context);
+
+    final ImageProvider imageProvider = item.imageBytes != null
+        ? MemoryImage(item.imageBytes!)
+        : NetworkImage(item.imageUrl) as ImageProvider;
+
     return Container(
       width: isMobile ? double.infinity : 400,
       height: isMobile ? 240 : 280,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
-        image: DecorationImage(image: NetworkImage(url), fit: BoxFit.cover),
+        image: DecorationImage(image: imageProvider, fit: BoxFit.cover),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),

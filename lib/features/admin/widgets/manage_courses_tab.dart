@@ -48,7 +48,7 @@ class _ManageCoursesTabState extends State<ManageCoursesTab> {
             itemBuilder: (context, index) {
               final course = widget.courses[index];
               return ListTile(
-                leading: Icon(course.icon, color: kPrimaryGreen),
+                leading: Icon(course.icon, color: kDarkGreen),
                 title: Text(
                   course.title,
                   style: const TextStyle(fontWeight: FontWeight.bold),
@@ -226,19 +226,19 @@ class _ManageCoursesTabState extends State<ManageCoursesTab> {
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
                                   color: tempIcon == icon
-                                      ? kPrimaryGreen.withValues(alpha: 0.2)
+                                      ? kDarkGreen.withValues(alpha: 0.2)
                                       : Colors.transparent,
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
                                     color: tempIcon == icon
-                                        ? kPrimaryGreen
+                                        ? kDarkGreen
                                         : Colors.grey.withValues(alpha: 0.3),
                                   ),
                                 ),
                                 child: Icon(
                                   icon,
                                   color: tempIcon == icon
-                                      ? kPrimaryGreen
+                                      ? kDarkGreen
                                       : Colors.grey,
                                   size: 24,
                                 ),
@@ -311,7 +311,7 @@ class _ManageCoursesTabState extends State<ManageCoursesTab> {
                             : orderController.text,
                         remainingSeats: remainingSeatsController.text,
                         queryLink: queryLinkController.text.isEmpty
-                            ? 'https://wa.me/923451234567'
+                            ? 'https://wa.me/923138840971'
                             : queryLinkController.text,
                         icon: tempIcon,
                       ),
@@ -462,19 +462,19 @@ class _ManageCoursesTabState extends State<ManageCoursesTab> {
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
                                   color: tempIcon == icon
-                                      ? kPrimaryGreen.withValues(alpha: 0.2)
+                                      ? kDarkGreen.withValues(alpha: 0.2)
                                       : Colors.transparent,
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
                                     color: tempIcon == icon
-                                        ? kPrimaryGreen
+                                        ? kDarkGreen
                                         : Colors.grey.withValues(alpha: 0.3),
                                   ),
                                 ),
                                 child: Icon(
                                   icon,
                                   color: tempIcon == icon
-                                      ? kPrimaryGreen
+                                      ? kDarkGreen
                                       : Colors.grey,
                                   size: 24,
                                 ),

@@ -42,7 +42,7 @@ class TransparencySection extends StatelessWidget {
         Text(
           'Our Promise of Transparency',
           style: GoogleFonts.merriweather(
-            color: kPrimaryGreen,
+            color: kDarkGreen,
             fontSize: isMobile ? 32 : 44,
             fontWeight: FontWeight.bold,
           ),

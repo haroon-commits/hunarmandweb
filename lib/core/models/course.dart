@@ -22,7 +22,7 @@ class Course {
     required this.title,
     required this.subtitles,
     this.registrationLink = '',
-    this.queryLink = 'https://wa.me/923451234567', // Default WhatsApp
+    this.queryLink = 'https://wa.me/923138840971',
     this.courseType = 'Physical',
     this.locationDetail = '',
     this.description = '',

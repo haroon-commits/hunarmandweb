@@ -6,6 +6,7 @@ import 'core/models/bank_details.dart';
 import 'core/models/course.dart';
 import 'core/models/donation_option.dart';
 import 'core/models/gallery_item.dart';
+import 'core/models/ticker_item.dart';
 import 'core/utils/responsive.dart';
 import 'features/about/screens/about_page.dart';
 import 'features/admin/screens/admin_panel.dart';
@@ -50,8 +51,8 @@ class _HunarmandKashmirAppState extends State<HunarmandKashmirApp> {
       icon: Icons.smart_toy,
       courseType: 'Online',
       locationDetail: 'Zoom / Google Meet',
-      registrationLink: 'https://forms.gle/example1',
-      queryLink: 'https://wa.me/923451234567',
+      registrationLink: '',
+      queryLink: 'https://wa.me/923138840971',
       description:
           'I know you feel basic regarding your productivity, starts with learning online.',
       duration: '3 Months | 12 Weeks',
@@ -67,8 +68,8 @@ class _HunarmandKashmirAppState extends State<HunarmandKashmirApp> {
       icon: Icons.brush,
       courseType: 'Physical',
       locationDetail: 'SCO Software Tech Park, Mirpur',
-      registrationLink: 'https://forms.gle/example2',
-      queryLink: 'https://wa.me/923451234567',
+      registrationLink: '',
+      queryLink: 'https://wa.me/923138840971',
       description:
           'Learn complete graphic design have best for the family and globally.',
       duration: '3 Months | 12 Weeks',
@@ -84,8 +85,8 @@ class _HunarmandKashmirAppState extends State<HunarmandKashmirApp> {
       icon: Icons.shopping_bag,
       courseType: 'Physical',
       locationDetail: 'SCO Software Tech Park, Mirpur',
-      registrationLink: 'https://forms.gle/example3',
-      queryLink: 'https://wa.me/923451234567',
+      registrationLink: '',
+      queryLink: 'https://wa.me/923138840971',
       description:
           'Learn tools techniques for stores using Shopify and dropshipping models.',
       duration: '2 Months | 8 Weeks',
@@ -101,6 +102,7 @@ class _HunarmandKashmirAppState extends State<HunarmandKashmirApp> {
       icon: Icons.language,
       courseType: 'Online',
       locationDetail: 'Discord / Live Sessions',
+      queryLink: 'https://wa.me/923138840971',
       description:
           'Master the art of freelancing and work with international clients.',
       duration: '2 Months | 8 Weeks',
@@ -111,23 +113,7 @@ class _HunarmandKashmirAppState extends State<HunarmandKashmirApp> {
     ),
   ];
 
-  final List<GalleryItem> _galleryItems = [
-    GalleryItem(
-      id: '1',
-      imageUrl:
-          'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80',
-    ),
-    GalleryItem(
-      id: '2',
-      imageUrl:
-          'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&q=80',
-    ),
-    GalleryItem(
-      id: '3',
-      imageUrl:
-          'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&q=80',
-    ),
-  ];
+  final List<GalleryItem> _galleryItems = [];
 
   final List<DonationOption> _donationOptions = [
     DonationOption(
@@ -159,17 +145,25 @@ class _HunarmandKashmirAppState extends State<HunarmandKashmirApp> {
 
   final BankDetails _bankDetails = BankDetails(
     accountName: 'Hunarmand Kashmir Trust',
-    accountNo: '1234 5678 9012',
-    bankName: 'Bank of AJK, Mirpur',
-    branchCode: '0123',
+    accountNo: '',
+    bankName: '',
+    branchCode: '',
   );
 
-  List<String> _tickerMessages = [
-    "Admissions Open for Batch 5! Secure your seat today.",
-    "Special discounts for early birds available until June 1st.",
-    "Join our WhatsApp community for daily updates.",
+  List<TickerItem> _tickerItems = [
+    TickerItem(
+      message: 'Admissions Open for Batch 5! Secure your seat today.',
+      screenIndex: 2, // Courses
+    ),
+    TickerItem(
+      message: 'Special discounts for early birds available until June 1st.',
+      screenIndex: 2,
+    ),
+    TickerItem(
+      message: 'Join our WhatsApp community for daily updates.',
+      link: 'https://wa.me/923138840971',
+    ),
   ];
-  int? _tickerTargetIndex = 2; // Default to Courses
 
   @override
   void dispose() {
@@ -195,9 +189,9 @@ class _HunarmandKashmirAppState extends State<HunarmandKashmirApp> {
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF004D26),
-          primary: const Color(0xFF004D26),
-          secondary: const Color(0xFFF2A900),
+          seedColor: kDarkGreen,
+          primary: kDarkGreen,
+          secondary: kAccentOrange,
         ),
         textTheme: GoogleFonts.interTextTheme(),
       ),
@@ -207,15 +201,10 @@ class _HunarmandKashmirAppState extends State<HunarmandKashmirApp> {
           drawer: _buildDrawer(context),
           body: Column(
             children: [
-              if (_tickerMessages.isNotEmpty)
-                TickerWidget(
-                  messages: _tickerMessages,
-                  onTap: _tickerTargetIndex != null
-                      ? () => _navigateTo(_tickerTargetIndex!)
-                      : null,
-                ),
+              if (_tickerItems.isNotEmpty)
+                TickerWidget(items: _tickerItems, onNavigate: _navigateTo),
               Container(
-                color: const Color(0xFF166600), // navbar background
+                color: kNavGreen,
                 padding: EdgeInsets.symmetric(
                   horizontal: Responsive.isMobile(context) ? 20 : 80,
                   vertical: 20,
@@ -236,7 +225,7 @@ class _HunarmandKashmirAppState extends State<HunarmandKashmirApp> {
   Widget _buildDrawer(BuildContext context) {
     return Drawer(
       child: Container(
-        color: kPrimaryGreen,
+        color: kDarkGreen,
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
@@ -294,7 +283,7 @@ class _HunarmandKashmirAppState extends State<HunarmandKashmirApp> {
       leading: Icon(
         icon,
         color: isSpecial
-            ? const Color.fromRGBO(242, 169, 0, 1)
+            ? kAccentOrange
             : (active ? kAccentOrange : Colors.white),
       ),
       title: Text(
@@ -358,12 +347,10 @@ class _HunarmandKashmirAppState extends State<HunarmandKashmirApp> {
           donationOptions: _donationOptions,
           bankDetails: _bankDetails,
           isLoggedIn: _isAdminLoggedIn,
-          tickerMessages: _tickerMessages,
-          tickerTargetIndex: _tickerTargetIndex,
+          tickerItems: _tickerItems,
           onLogin: (status) => setState(() => _isAdminLoggedIn = status),
-          onUpdateTicker: (messages, target) => setState(() {
-            _tickerMessages = messages;
-            _tickerTargetIndex = target;
+          onUpdateTicker: (items) => setState(() {
+            _tickerItems = items;
           }),
           onUpdate: () => setState(() {}),
         );

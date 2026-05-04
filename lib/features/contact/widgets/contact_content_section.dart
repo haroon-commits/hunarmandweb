@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/constants/colors.dart';
 import '../../../core/utils/responsive.dart';
@@ -32,7 +33,7 @@ class ContactContentSection extends StatelessWidget {
           Text(
             'Visit Our Campus',
             style: GoogleFonts.merriweather(
-              color: kPrimaryGreen,
+              color: kDarkGreen,
               fontSize: isMobile ? 32 : 48,
               fontWeight: FontWeight.bold,
             ),
@@ -58,7 +59,7 @@ class ContactContentSection extends StatelessWidget {
           _contactInfo(
             Icons.phone,
             'Phone',
-            '0313 884 0571',
+            kPhoneDisplay,
             const Color(0xFFE0F2F1),
             const Color(0xFF009688),
           ),
@@ -66,7 +67,7 @@ class ContactContentSection extends StatelessWidget {
           _contactInfo(
             Icons.chat_bubble_outline,
             'WhatsApp',
-            '0313 884 0571',
+            kPhoneDisplay,
             const Color(0xFFE1F5FE),
             const Color(0xFF03A9F4),
           ),
@@ -121,9 +122,14 @@ class ContactContentSection extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () async {
+                final uri = Uri.parse(kWhatsAppUrl);
+                if (await canLaunchUrl(uri)) {
+                  await launchUrl(uri);
+                }
+              },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF25D366),
+                backgroundColor: kDarkGreen,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 25),
                 shape: RoundedRectangleBorder(

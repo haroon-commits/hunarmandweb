@@ -15,7 +15,7 @@ class StorySection extends StatelessWidget {
         Text(
           'From Kashmir to Global Opportunities',
           style: GoogleFonts.merriweather(
-            color: kPrimaryGreen,
+            color: kDarkGreen,
             fontSize: isMobile ? 36 : 48,
             fontWeight: FontWeight.bold,
             height: 1.1,
@@ -35,7 +35,7 @@ class StorySection extends StatelessWidget {
           'We chose to change that.',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: kPrimaryGreen,
+            color: kDarkGreen,
             fontSize: 16,
           ),
         ),

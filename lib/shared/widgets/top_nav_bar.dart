@@ -61,7 +61,7 @@ class TopNavBar extends StatelessWidget {
                       'Apply Now',
                       null,
                       Colors.white,
-                      kPrimaryGreen,
+                      kDarkGreen,
                       false,
                     ),
                   ),
