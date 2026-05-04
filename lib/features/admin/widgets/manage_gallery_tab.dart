@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:html' as html;
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -182,14 +181,16 @@ class _ManageGalleryTabState extends State<ManageGalleryTab> {
       context: context,
       barrierDismissible: false,
       builder: (context) => _AddImageDialog(
-        onAddFromLink: (url) async {
+        // Save the RAW url to Firestore (not the proxy-wrapped one)
+        onAddFromLink: (rawUrl) async {
           try {
-            await _galleryService.addFromLink(url);
-            if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Link added!')));
+            await _galleryService.addFromLink(rawUrl);
+            if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Image added successfully!')));
           } catch (e) {
-            if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e')));
+            if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to save: $e')));
           }
         },
+        // Proxy is only used for the live preview inside the dialog
         processUrl: _processImageUrl,
       ),
     );
@@ -240,7 +241,8 @@ class _AddImageDialogState extends State<_AddImageDialog> {
   void _submit() {
     final raw = _urlController.text.trim();
     if (raw.isEmpty) return;
-    widget.onAddFromLink(widget.processUrl(raw));
+    // Pass the RAW url – the proxy is only for preview rendering, not storage
+    widget.onAddFromLink(raw);
     Navigator.pop(context);
   }
 
