@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:go_router/go_router.dart';
 import 'firebase_options.dart';
 
 import 'core/constants/colors.dart';
 import 'core/models/bank_details.dart';
 import 'core/models/course.dart';
 import 'core/models/donation_option.dart';
-import 'core/models/gallery_item.dart';
 import 'core/models/ticker_item.dart';
 import 'core/utils/responsive.dart';
 import 'features/about/screens/about_page.dart';
@@ -20,20 +19,14 @@ import 'features/gallery/screens/gallery_page.dart';
 import 'features/home/screens/landing_page.dart';
 import 'shared/widgets/ticker_widget.dart';
 import 'shared/widgets/top_nav_bar.dart';
-import 'core/utils/url_helper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: '.env');
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  // Capture Flutter framework errors
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.presentError(details);
-    debugPrint('Global Flutter Error: ${details.exception}');
-    debugPrint('Stack trace: ${details.stack}');
+    debugPrint('Flutter Error: ${details.exception}');
   };
 
   runApp(const HunarmandKashmirApp());
@@ -48,12 +41,17 @@ class HunarmandKashmirApp extends StatefulWidget {
 
 class _HunarmandKashmirAppState extends State<HunarmandKashmirApp> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  // One scroll controller per page so each IndexedStack page scrolls independently
+
+  // One scroll controller per branch so each page scrolls independently.
   final Map<int, ScrollController> _scrollControllers = {
-    for (int i = 0; i <= 6; i++) i: ScrollController()
+    for (int i = 0; i <= 6; i++) i: ScrollController(),
   };
-  int _currentPageIndex = 0; // will be updated in initState from URL
+
   bool _isAdminLoggedIn = false;
+
+  // ---------------------------------------------------------------------------
+  // App data
+  // ---------------------------------------------------------------------------
 
   final List<Course> _courses = [
     Course(
@@ -64,7 +62,7 @@ class _HunarmandKashmirAppState extends State<HunarmandKashmirApp> {
       courseType: 'Online',
       locationDetail: 'Zoom / Google Meet',
       registrationLink: '',
-      queryLink: 'https://wa.me/923138840971',
+      queryLink: kWhatsAppUrl,
       description:
           'I know you feel basic regarding your productivity, starts with learning online.',
       duration: '3 Months | 12 Weeks',
@@ -81,7 +79,7 @@ class _HunarmandKashmirAppState extends State<HunarmandKashmirApp> {
       courseType: 'Physical',
       locationDetail: 'SCO Software Tech Park, Mirpur',
       registrationLink: '',
-      queryLink: 'https://wa.me/923138840971',
+      queryLink: kWhatsAppUrl,
       description:
           'Learn complete graphic design have best for the family and globally.',
       duration: '3 Months | 12 Weeks',
@@ -98,7 +96,7 @@ class _HunarmandKashmirAppState extends State<HunarmandKashmirApp> {
       courseType: 'Physical',
       locationDetail: 'SCO Software Tech Park, Mirpur',
       registrationLink: '',
-      queryLink: 'https://wa.me/923138840971',
+      queryLink: kWhatsAppUrl,
       description:
           'Learn tools techniques for stores using Shopify and dropshipping models.',
       duration: '2 Months | 8 Weeks',
@@ -114,7 +112,7 @@ class _HunarmandKashmirAppState extends State<HunarmandKashmirApp> {
       icon: Icons.language,
       courseType: 'Online',
       locationDetail: 'Discord / Live Sessions',
-      queryLink: 'https://wa.me/923138840971',
+      queryLink: kWhatsAppUrl,
       description:
           'Master the art of freelancing and work with international clients.',
       duration: '2 Months | 8 Weeks',
@@ -139,7 +137,7 @@ class _HunarmandKashmirAppState extends State<HunarmandKashmirApp> {
       title: 'Sponsor a Skill',
       price: 'Rs. 5,000',
       description:
-          'Cover the cost of a complete short-term module (e.g., Graphic Design Basics) for one deserving student.',
+          'Cover the cost of a complete short-term module for one deserving student.',
       icon: Icons.menu_book,
       isPopular: true,
     ),
@@ -148,7 +146,7 @@ class _HunarmandKashmirAppState extends State<HunarmandKashmirApp> {
       title: 'Full Scholarship',
       price: 'Rs. 15,000',
       description:
-          'Sponsor a student\'s entire journey from beginner to job-ready professional, including mentorship.',
+          'Sponsor a student\'s entire journey from beginner to job-ready professional.',
       icon: Icons.group,
     ),
   ];
@@ -163,7 +161,7 @@ class _HunarmandKashmirAppState extends State<HunarmandKashmirApp> {
   List<TickerItem> _tickerItems = [
     TickerItem(
       message: 'Admissions Open for Batch 5! Secure your seat today.',
-      screenIndex: 2, // Courses
+      screenIndex: 2,
     ),
     TickerItem(
       message: 'Special discounts for early birds available until June 1st.',
@@ -175,15 +173,129 @@ class _HunarmandKashmirAppState extends State<HunarmandKashmirApp> {
     ),
   ];
 
+  // ---------------------------------------------------------------------------
+  // go_router — StatefulShellRoute.indexedStack keeps all pages alive in memory
+  // while giving each branch a real, bookmarkable URL.
+  // ---------------------------------------------------------------------------
+
+  /// Cached shell so _navigateTo can call goBranch without needing context.
+  StatefulNavigationShell? _shell;
+
+  late final GoRouter _router;
+
   @override
   void initState() {
     super.initState();
-    // Read the page from the URL hash AFTER Flutter is fully mounted.
-    // This is the reliable way to do it on Flutter web.
-    final page = getUrlPage();
-    if (page != 0) {
-      _currentPageIndex = page;
-    }
+    _router = GoRouter(
+      initialLocation: '/',
+      routes: [
+        StatefulShellRoute.indexedStack(
+          builder: (context, state, navigationShell) {
+            _shell = navigationShell;
+            return _buildShell(context, navigationShell);
+          },
+          branches: [
+            // 0 — Home
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/',
+                  builder: (context, state) => LandingPage(
+                    onNavigate: _navigateTo,
+                    courses: _courses,
+                    scrollController: _scrollControllers[0]!,
+                  ),
+                ),
+              ],
+            ),
+            // 1 — About
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/about',
+                  builder: (context, state) => AboutPage(
+                    onNavigate: _navigateTo,
+                    scrollController: _scrollControllers[1]!,
+                  ),
+                ),
+              ],
+            ),
+            // 2 — Courses
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/courses',
+                  builder: (context, state) => CoursesPage(
+                    onNavigate: _navigateTo,
+                    courses: _courses,
+                    scrollController: _scrollControllers[2]!,
+                  ),
+                ),
+              ],
+            ),
+            // 3 — Gallery
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/gallery',
+                  builder: (context, state) => GalleryPage(
+                    onNavigate: _navigateTo,
+                    scrollController: _scrollControllers[3]!,
+                  ),
+                ),
+              ],
+            ),
+            // 4 — Contact
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/contact',
+                  builder: (context, state) => ContactPage(
+                    onNavigate: _navigateTo,
+                    scrollController: _scrollControllers[4]!,
+                  ),
+                ),
+              ],
+            ),
+            // 5 — Donate
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/donate',
+                  builder: (context, state) => DonatePage(
+                    onNavigate: _navigateTo,
+                    donationOptions: _donationOptions,
+                    bankDetails: _bankDetails,
+                    scrollController: _scrollControllers[5]!,
+                  ),
+                ),
+              ],
+            ),
+            // 6 — Admin
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/admin',
+                  builder: (context, state) => AdminPanel(
+                    onNavigate: _navigateTo,
+                    courses: _courses,
+                    donationOptions: _donationOptions,
+                    bankDetails: _bankDetails,
+                    isLoggedIn: _isAdminLoggedIn,
+                    tickerItems: _tickerItems,
+                    onLogin: (status) =>
+                        setState(() => _isAdminLoggedIn = status),
+                    onUpdateTicker: (items) =>
+                        setState(() => _tickerItems = items),
+                    onUpdate: () => setState(() {}),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ],
+    );
   }
 
   @override
@@ -191,22 +303,25 @@ class _HunarmandKashmirAppState extends State<HunarmandKashmirApp> {
     for (final c in _scrollControllers.values) {
       c.dispose();
     }
+    _router.dispose();
     super.dispose();
   }
 
+  /// Navigate to a branch by index — same API as the old _navigateTo.
   void _navigateTo(int index) {
-    // Scroll the target page to top
+    if (index < 0 || index > 6) return;
     final ctrl = _scrollControllers[index];
-    if (ctrl != null && ctrl.hasClients) {
-      ctrl.jumpTo(0);
-    }
-    setState(() => _currentPageIndex = index);
-    setUrlPage(index); // keep URL in sync so reload stays on this page
+    if (ctrl != null && ctrl.hasClients) ctrl.jumpTo(0);
+    _shell?.goBranch(index, initialLocation: index == _shell!.currentIndex);
   }
+
+  // ---------------------------------------------------------------------------
+  // UI
+  // ---------------------------------------------------------------------------
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'Hunarmand Kashmir',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
@@ -218,34 +333,40 @@ class _HunarmandKashmirAppState extends State<HunarmandKashmirApp> {
         ),
         textTheme: GoogleFonts.interTextTheme(),
       ),
-      home: Builder(
-        builder: (context) => Scaffold(
-          key: _scaffoldKey,
-          drawer: _buildDrawer(context),
-          body: Column(
-            children: [
-              if (_tickerItems.isNotEmpty)
-                TickerWidget(items: _tickerItems, onNavigate: _navigateTo),
-              Container(
-                color: kNavGreen,
-                padding: EdgeInsets.symmetric(
-                  horizontal: Responsive.isMobile(context) ? 20 : 80,
-                  vertical: 20,
-                ),
-                child: TopNavBar(
-                  onNavigate: _navigateTo,
-                  activeIndex: _currentPageIndex,
-                ),
-              ),
-              Expanded(child: _buildBody()),
-            ],
+      routerConfig: _router,
+    );
+  }
+
+  Widget _buildShell(
+    BuildContext context,
+    StatefulNavigationShell navigationShell,
+  ) {
+    return Scaffold(
+      key: _scaffoldKey,
+      drawer: _buildDrawer(context, navigationShell.currentIndex),
+      body: Column(
+        children: [
+          if (_tickerItems.isNotEmpty)
+            TickerWidget(items: _tickerItems, onNavigate: _navigateTo),
+          Container(
+            color: kNavGreen,
+            padding: EdgeInsets.symmetric(
+              horizontal: Responsive.isMobile(context) ? 20 : 80,
+              vertical: 20,
+            ),
+            child: TopNavBar(
+              onNavigate: _navigateTo,
+              activeIndex: navigationShell.currentIndex,
+            ),
           ),
-        ),
+          // The shell IS the IndexedStack — all branches stay alive in memory.
+          Expanded(child: navigationShell),
+        ],
       ),
     );
   }
 
-  Widget _buildDrawer(BuildContext context) {
+  Widget _buildDrawer(BuildContext context, int activeIndex) {
     return Drawer(
       child: Container(
         color: kDarkGreen,
@@ -280,14 +401,33 @@ class _HunarmandKashmirAppState extends State<HunarmandKashmirApp> {
                 ),
               ),
             ),
-            _drawerItem(context, 0, 'Home', Icons.home),
-            _drawerItem(context, 1, 'About Us', Icons.info),
-            _drawerItem(context, 2, 'Courses', Icons.book),
-            _drawerItem(context, 3, 'Gallery', Icons.photo_library),
-            _drawerItem(context, 4, 'Contact', Icons.contact_mail),
+            _drawerItem(context, 0, 'Home', Icons.home, activeIndex),
+            _drawerItem(context, 1, 'About Us', Icons.info, activeIndex),
+            _drawerItem(context, 2, 'Courses', Icons.book, activeIndex),
+            _drawerItem(
+              context,
+              3,
+              'Gallery',
+              Icons.photo_library,
+              activeIndex,
+            ),
+            _drawerItem(context, 4, 'Contact', Icons.contact_mail, activeIndex),
             const Divider(color: Colors.white24),
-            _drawerItem(context, 5, 'Donate', Icons.favorite, isSpecial: true),
-            _drawerItem(context, 6, 'Admin', Icons.admin_panel_settings),
+            _drawerItem(
+              context,
+              5,
+              'Donate',
+              Icons.favorite,
+              activeIndex,
+              isSpecial: true,
+            ),
+            _drawerItem(
+              context,
+              6,
+              'Admin',
+              Icons.admin_panel_settings,
+              activeIndex,
+            ),
           ],
         ),
       ),
@@ -298,10 +438,11 @@ class _HunarmandKashmirAppState extends State<HunarmandKashmirApp> {
     BuildContext context,
     int index,
     String title,
-    IconData icon, {
+    IconData icon,
+    int activeIndex, {
     bool isSpecial = false,
   }) {
-    bool active = _currentPageIndex == index;
+    final active = activeIndex == index;
     return ListTile(
       leading: Icon(
         icon,
@@ -322,58 +463,6 @@ class _HunarmandKashmirAppState extends State<HunarmandKashmirApp> {
         _navigateTo(index);
         Navigator.pop(context);
       },
-    );
-  }
-
-  // IndexedStack keeps ALL pages alive simultaneously.
-  // This means:
-  //  - AdminPanel never resets its active tab when you navigate away and back
-  //  - GalleryPage keeps its Firestore stream alive — no re-fetch needed
-  //  - Each page scrolls independently via its own ScrollController
-  Widget _buildBody() {
-    return IndexedStack(
-      index: _currentPageIndex,
-      children: [
-        LandingPage(
-          onNavigate: _navigateTo,
-          courses: _courses,
-          scrollController: _scrollControllers[0]!,
-        ),
-        AboutPage(
-          onNavigate: _navigateTo,
-          scrollController: _scrollControllers[1]!,
-        ),
-        CoursesPage(
-          onNavigate: _navigateTo,
-          courses: _courses,
-          scrollController: _scrollControllers[2]!,
-        ),
-        GalleryPage(
-          onNavigate: _navigateTo,
-          scrollController: _scrollControllers[3]!,
-        ),
-        ContactPage(
-          onNavigate: _navigateTo,
-          scrollController: _scrollControllers[4]!,
-        ),
-        DonatePage(
-          onNavigate: _navigateTo,
-          donationOptions: _donationOptions,
-          bankDetails: _bankDetails,
-          scrollController: _scrollControllers[5]!,
-        ),
-        AdminPanel(
-          onNavigate: _navigateTo,
-          courses: _courses,
-          donationOptions: _donationOptions,
-          bankDetails: _bankDetails,
-          isLoggedIn: _isAdminLoggedIn,
-          tickerItems: _tickerItems,
-          onLogin: (status) => setState(() => _isAdminLoggedIn = status),
-          onUpdateTicker: (items) => setState(() { _tickerItems = items; }),
-          onUpdate: () => setState(() {}),
-        ),
-      ],
     );
   }
 }

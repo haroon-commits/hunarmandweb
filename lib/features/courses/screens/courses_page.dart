@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../../core/models/course.dart';
 import '../../../shared/widgets/footer_section.dart';
 import '../widgets/courses_hero_section.dart';
-import '../widgets/learning_choice_section.dart';
 import '../widgets/courses_fees_section.dart';
 import '../widgets/discounts_section.dart';
 import '../widgets/orphan_support_banner.dart';

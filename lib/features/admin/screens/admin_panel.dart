@@ -5,7 +5,6 @@ import '../../../core/constants/colors.dart';
 import '../../../core/models/bank_details.dart';
 import '../../../core/models/course.dart';
 import '../../../core/models/donation_option.dart';
-import '../../../core/models/gallery_item.dart';
 import '../../../core/models/ticker_item.dart';
 import '../../../core/utils/responsive.dart';
 import '../widgets/manage_courses_tab.dart';
