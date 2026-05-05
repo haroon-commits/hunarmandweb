@@ -43,16 +43,26 @@ class AdminPanel extends StatefulWidget {
 
 class _AdminPanelState extends State<AdminPanel> {
   final TextEditingController _passController = TextEditingController();
-  int _activeTab = 0; // 0: Courses, 1: Gallery, 2: Donations, 3: Bank Details
+  int _activeTab = 0;
+
+  // Login state is managed locally so it updates immediately via setState.
+  // (go_router StatefulShellRoute caches branch widgets — parent setState
+  // never re-calls the branch builder, so widget.isLoggedIn would stay false.)
+  bool _isLoggedIn = false;
 
   void _login() {
     if (_passController.text == 'admin123') {
-      widget.onLogin(true);
+      setState(() => _isLoggedIn = true);
+      widget.onLogin(true); // also notify parent for any cross-widget effects
     } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Invalid Password')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Invalid Password')));
     }
+  }
+
+  void _logout() {
+    setState(() => _isLoggedIn = false);
+    widget.onLogin(false);
   }
 
   @override
@@ -64,7 +74,7 @@ class _AdminPanelState extends State<AdminPanel> {
   @override
   Widget build(BuildContext context) {
     bool isMobile = Responsive.isMobile(context);
-    if (!widget.isLoggedIn) {
+    if (!_isLoggedIn) {
       return Scaffold(
         backgroundColor: kLightBg,
         body: Center(
@@ -135,7 +145,7 @@ class _AdminPanelState extends State<AdminPanel> {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () => widget.onLogin(false),
+            onPressed: _logout,
           ),
         ],
       ),
