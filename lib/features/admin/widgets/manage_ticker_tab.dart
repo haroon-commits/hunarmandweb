@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/constants/colors.dart';
 import '../../../../core/models/ticker_item.dart';
+import '../../../../core/services/app_data_service.dart';
 
 // ──────────────────────────────────────────────
 // Per-item editor state
@@ -43,6 +44,7 @@ class ManageTickerTab extends StatefulWidget {
 
 class _ManageTickerTabState extends State<ManageTickerTab> {
   late List<_TickerItemState> _items;
+  final _service = AppDataService();
 
   static const List<DropdownMenuItem<int?>> _screenItems = [
     DropdownMenuItem(value: null, child: Text('None (no screen)')),
@@ -107,14 +109,28 @@ class _ManageTickerTabState extends State<ManageTickerTab> {
         )
         .toList();
 
-    widget.onUpdateTicker(finalItems);
+    // Save to Firestore
+    _service.saveTicker(finalItems).then((_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ Ticker saved to Firebase!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    }).catchError((e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('❌ Error saving: $e'),
+              backgroundColor: Colors.red),
+        );
+      }
+    });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Ticker updated successfully'),
-        backgroundColor: Colors.green,
-      ),
-    );
+    // Also notify parent for in-memory sync
+    widget.onUpdateTicker(finalItems);
   }
 
   @override

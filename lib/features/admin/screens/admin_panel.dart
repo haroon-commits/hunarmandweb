@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/constants/colors.dart';
-import '../../../core/models/bank_details.dart';
-import '../../../core/models/course.dart';
-import '../../../core/models/donation_option.dart';
 import '../../../core/models/ticker_item.dart';
 import '../../../core/utils/responsive.dart';
 import '../widgets/manage_courses_tab.dart';
@@ -15,9 +12,6 @@ import '../widgets/manage_ticker_tab.dart';
 
 class AdminPanel extends StatefulWidget {
   final Function(int) onNavigate;
-  final List<Course> courses;
-  final List<DonationOption> donationOptions;
-  final BankDetails bankDetails;
   final bool isLoggedIn;
   final List<TickerItem> tickerItems;
   final Function(bool) onLogin;
@@ -27,9 +21,6 @@ class AdminPanel extends StatefulWidget {
   const AdminPanel({
     super.key,
     required this.onNavigate,
-    required this.courses,
-    required this.donationOptions,
-    required this.bankDetails,
     required this.isLoggedIn,
     required this.tickerItems,
     required this.onLogin,
@@ -170,34 +161,20 @@ class _AdminPanelState extends State<AdminPanel> {
   Widget _buildActiveTab() {
     switch (_activeTab) {
       case 0:
-        return ManageCoursesTab(
-          courses: widget.courses,
-          onUpdate: widget.onUpdate,
-        );
+        return const ManageCoursesTab();
       case 1:
-        return ManageGalleryTab(
-          onUpdate: widget.onUpdate,
-        );
+        return ManageGalleryTab(onUpdate: widget.onUpdate);
       case 2:
-        return ManageDonationsTab(
-          donationOptions: widget.donationOptions,
-          onUpdate: widget.onUpdate,
-        );
+        return const ManageDonationsTab();
       case 3:
-        return ManageBankTab(
-          bankDetails: widget.bankDetails,
-          onUpdate: widget.onUpdate,
-        );
+        return const ManageBankTab();
       case 4:
         return ManageTickerTab(
           tickerItems: widget.tickerItems,
           onUpdateTicker: widget.onUpdateTicker,
         );
       default:
-        return ManageCoursesTab(
-          courses: widget.courses,
-          onUpdate: widget.onUpdate,
-        );
+        return const ManageCoursesTab();
     }
   }
 

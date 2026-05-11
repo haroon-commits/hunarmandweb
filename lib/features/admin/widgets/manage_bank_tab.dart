@@ -1,40 +1,22 @@
 import 'package:flutter/material.dart';
-
 import '../../../../core/constants/colors.dart';
 import '../../../../core/models/bank_details.dart';
+import '../../../../core/services/app_data_service.dart';
 
 class ManageBankTab extends StatefulWidget {
-  final BankDetails bankDetails;
-  final VoidCallback onUpdate;
-
-  const ManageBankTab({
-    super.key,
-    required this.bankDetails,
-    required this.onUpdate,
-  });
+  const ManageBankTab({super.key});
 
   @override
   State<ManageBankTab> createState() => _ManageBankTabState();
 }
 
 class _ManageBankTabState extends State<ManageBankTab> {
-  late TextEditingController _nameController;
-  late TextEditingController _noController;
-  late TextEditingController _bankController;
-  late TextEditingController _branchController;
-
-  @override
-  void initState() {
-    super.initState();
-    _nameController = TextEditingController(
-      text: widget.bankDetails.accountName,
-    );
-    _noController = TextEditingController(text: widget.bankDetails.accountNo);
-    _bankController = TextEditingController(text: widget.bankDetails.bankName);
-    _branchController = TextEditingController(
-      text: widget.bankDetails.branchCode,
-    );
-  }
+  final _service = AppDataService();
+  final _nameController = TextEditingController();
+  final _noController = TextEditingController();
+  final _bankController = TextEditingController();
+  final _branchController = TextEditingController();
+  bool _loaded = false;
 
   @override
   void dispose() {
@@ -47,98 +29,96 @@ class _ManageBankTabState extends State<ManageBankTab> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(40),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Bank Transfer Details',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            'This information is displayed in the "Direct Bank Transfer" section of the Donate page.',
-            style: TextStyle(color: Colors.grey),
-          ),
-          const SizedBox(height: 40),
-          TextField(
-            controller: _nameController,
-            decoration: const InputDecoration(
-              labelText: 'Account Name',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.person_outline),
-            ),
-          ),
-          const SizedBox(height: 20),
-          TextField(
-            controller: _noController,
-            decoration: const InputDecoration(
-              labelText: 'Account Number',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.numbers),
-            ),
-          ),
-          const SizedBox(height: 20),
-          TextField(
-            controller: _bankController,
-            decoration: const InputDecoration(
-              labelText: 'Bank Name',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.account_balance_outlined),
-            ),
-          ),
-          const SizedBox(height: 20),
-          TextField(
-            controller: _branchController,
-            decoration: const InputDecoration(
-              labelText: 'Branch Code',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.code),
-            ),
-          ),
-          const SizedBox(height: 40),
-          ElevatedButton(
-            onPressed: () {
-              try {
-                setState(() {
-                  widget.bankDetails.accountName = _nameController.text;
-                  widget.bankDetails.accountNo = _noController.text;
-                  widget.bankDetails.bankName = _bankController.text;
-                  widget.bankDetails.branchCode = _branchController.text;
-                });
-                widget.onUpdate();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Bank details updated successfully!'),
-                  ),
-                );
-              } catch (e, stack) {
-                debugPrint('AdminPanel Error (Update Bank): $e');
-                debugPrint(stack.toString());
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Error updating bank details: $e'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: kDarkGreen,
-              foregroundColor: Colors.white,
-              minimumSize: const Size(double.infinity, 60),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+    return StreamBuilder<BankDetails?>(
+      stream: _service.bankStream(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData && !_loaded) {
+          final b = snapshot.data!;
+          _nameController.text = b.accountName;
+          _noController.text = b.accountNo;
+          _bankController.text = b.bankName;
+          _branchController.text = b.branchCode;
+          _loaded = true;
+        }
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(40),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Bank Transfer Details',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 10),
+              const Text('Displayed on the Donate page.',
+                  style: TextStyle(color: Colors.grey)),
+              if (snapshot.connectionState == ConnectionState.waiting)
+                const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 20),
+                    child: LinearProgressIndicator()),
+              const SizedBox(height: 30),
+              TextField(
+                  controller: _nameController,
+                  decoration: const InputDecoration(
+                      labelText: 'Account Name',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.person_outline))),
+              const SizedBox(height: 20),
+              TextField(
+                  controller: _noController,
+                  decoration: const InputDecoration(
+                      labelText: 'Account Number',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.numbers))),
+              const SizedBox(height: 20),
+              TextField(
+                  controller: _bankController,
+                  decoration: const InputDecoration(
+                      labelText: 'Bank Name',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.account_balance_outlined))),
+              const SizedBox(height: 20),
+              TextField(
+                  controller: _branchController,
+                  decoration: const InputDecoration(
+                      labelText: 'Branch Code',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.code))),
+              const SizedBox(height: 40),
+              ElevatedButton(
+                onPressed: () async {
+                  try {
+                    await _service.saveBank(BankDetails(
+                      accountName: _nameController.text,
+                      accountNo: _noController.text,
+                      bankName: _bankController.text,
+                      branchCode: _branchController.text,
+                    ));
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                          content: Text('✅ Bank details saved!'),
+                          backgroundColor: Colors.green));
+                    }
+                  } catch (e) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text('❌ Error: $e'),
+                          backgroundColor: Colors.red));
+                    }
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: kDarkGreen,
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(double.infinity, 60),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10))),
+                child: const Text('Save Bank Details',
+                    style:
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ),
-            ),
-            child: const Text(
-              'Update Bank Information',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
